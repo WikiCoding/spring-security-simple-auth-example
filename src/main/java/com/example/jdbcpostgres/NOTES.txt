@@ -1,0 +1,27 @@
+Important logic details:
+
+1 - User model creation. It can be a Record or a normal Class. It can also implement UserDetails interface but it's not a Requirement
+
+2 - @Repository UserRepository creation for the Database Access layer
+2.1 - Inside of this repository it's needed a mapRow static method that takes in a (ResultSet rs, int rowNumber)
+and returns a new User object in order to populate properly the query results.
+2.2 - In the repository we don't have Beans, just plain methods.
+
+3 - @Service UserService creation which implements UserDetailsService interface to work along with the AuthenticationManager in the background
+3.1 - by implementing the @Override loadUserByUsername method we will return new UserDetails overriding all its methods.
+3.2 - if there are any authorities we can define them here.
+
+4 - @Service AuthService creation to handle logic like password encryption and issue authentication tokens. @Transaction to work with transactions
+
+5 - @Component JwtAuthFilter and @Service JwtService creation to handle token creation and filtering for authenticated users
+5.1 - the JwtAuthFilter extends OncePerRequest, so it runs the filter on every request. After this filter it will go to the SecurityFilterChain
+
+6 - @Component SecurityConfiguration creation to create http filters on certain endpoints, define roles,... and store
+the @Bean for the AuthenticationManager method and the @Bean for the PasswordEncoder method
+6.1 - the AuthenticationManager takes in UserDetailsService as it's only argument
+6.2 - here we first need to define a new DaoAuthenticationProvider object
+6.3 - then to this new object we setUserDetailsService with our UserDetailsService and we setPasswordEncoder with our encoder.
+6.4 - we implement the @Bean SecurityFilterChain with the HttpSecurity as the only Argument, so we define the http filters
+6.5 - the roles have to be defined in upperCase
+
+7 - Then just create the @RestController with @RequestMapping, creating an instance of AuthService and start using the endpoints!
